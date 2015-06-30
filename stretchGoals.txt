@@ -1,0 +1,4 @@
+- Add sounds (included in your assets folder)
+- Add animations (Google JavaScript tweening effects)
+- Add title screen
+- Spruce up the score screen

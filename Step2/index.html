@@ -33,7 +33,6 @@
                 
                 currentstate,
                 states = {
-                    Title: 0,
                     Splash: 1,
                     Game: 2,
                     Score: 3
@@ -54,34 +53,32 @@
                     },
                     
                     update: function() {
-                        var n;
-                        if(currentstate == states.Splash) {
-                            n = 10;
-                        } else {
-                            n = 5;
-                        }
-                        
-                        if(frames % n == 0) {
-                            this.frame++;
-                        }
-                        
+                        var n = currentstate === states.Splash ? 10 : 5;
+                        this.frame += frames % n === 0 ? 1 : 0;
                         this.frame %= this.animation.length;
                         
-                        if (currentstate == states.Splash) {
+                        if (currentstate === states.Splash) {
                             this.y = CAN_H - 280 + 5 * Math.cos(frames/10);
                             this.rotation = 0;
-                        } else if (currentstate == states.Game) {
+                        } else {
                             this.velocity += this.GRAV;
                             this.y += this.velocity;
                             
-                            if(this.y >= CAN_H - s_fg.height-10) {
+                            if (this.y >= CAN_H - s_fg.height-10) {
                                 this.y = CAN_H - s_fg.height-10;
-                                currentstate = states.Score;
+                                if (currentstate === states.Game) {
+                                    currentstate = states.Score;
+                                }
+                                this.velocity = this.JUMP;
                             }
-                            this.velocity = this.JUMP;
+                            
+                            if (this.velocity >= this.JUMP) {
+                                this.frame = 1;
+                                this.rotation = Math.min(Math.PI/2, this.rotation + 0.3);
+                            } else {
+                                this.rotation = -0.3;
+                            }
                         }
-                        
-                        console.log("breakY: " + + "" + "birdY");
                     },
                     
                     draw: function(ctx) {
@@ -95,20 +92,24 @@
                 },
                 
                 pipes = {
+                    
+                    pipes: [],
+                    
+                    reset: function() {
+            
+                    },
+                    
                     update: function() {
                         
                     },
                     
                     draw: function(ctx) {
-                        
+                       
                     }
                 };
             
             function onPress(e) {
                 switch (currentstate) {
-                    case states.Title:
-                        currentstate = states.Splash;
-                        break;
                     case states.Splash:
                         currentstate = states.Game;
                         bird.jump();
@@ -163,10 +164,15 @@
             
             function update() {
                 frames++;
-                fgpos = (fgpos-2)%15;
+                if(currentstate != states.Score) {
+                    fgpos = (fgpos-2)%15;
+                }
+                
+                if (currentstate == states.Game) {
+                    pipes.update();
+                }
                 
                 bird.update();
-                pipes.update();
             }
             
             function render() {
@@ -178,15 +184,15 @@
                 bird.draw(ctx);
                 pipes.draw(ctx);
                 
+                var w2 = CAN_W/2;
+                var h2 = CAN_H/2;
+                
                 s_fg.draw(ctx, fgpos, CAN_H - s_fg.height);
                 s_fg.draw(ctx, fgpos + s_fg.width, CAN_H - s_fg.height);
                 
-                var width2 = CAN_W/2;
-                var height2 = CAN_H/2;
-                
                 if(currentstate == states.Splash) {
-                    s_splash.draw(ctx, width2 - s_splash.width/2, height2 - s_splash.height/2);
-                    s_text.GetReady.draw(ctx, width2-s_text.GetReady.width/2, height2 - s_text.GetReady.height*3);
+                    s_splash.draw(ctx, w2 - s_splash.width/2, h2 - s_splash.height/2);
+                    s_text.GetReady.draw(ctx, w2-s_text.GetReady.width/2, h2 - s_text.GetReady.height*3);
                 }
             }
         </script>
